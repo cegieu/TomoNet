@@ -5,6 +5,11 @@ ETH Zurich — Chair of Space Geodesy
 acegla@ethz.ch
 
 ---
+When using, please cite:
+
+.....
+
+---
 
 # Overview
 
@@ -302,17 +307,12 @@ or:
 ```bash
 python train_one.py
 ```
----
-
-# License
-
-GNU General Public License (GPL)
 
 ---
 
 # Contact
-
 Adam Cegla  
 ETH Zurich  
 Chair of Space Geodesy  
 acegla@ethz.ch
+
