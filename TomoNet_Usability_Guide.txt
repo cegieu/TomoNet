@@ -1,0 +1,339 @@
+TomoNet v1.1
+Operational and Neural-Network GNSS Tomography Framework
+
+Designed by Adam Cegla
+ETH Zurich — Chair of Space Geodesy
+acegla@ethz.ch
+
+========================================================
+1. INTRODUCTION
+========================================================
+
+TomoNet v1.1 is a combined operational and machine-learning
+GNSS tomography framework for:
+- atmospheric wet refractivity
+- water vapour tomography
+- slant wet delay reconstruction
+
+The software consists of two major parts:
+1. Operational tomography framework
+2. Neural-network training framework
+
+========================================================
+2. SOFTWARE STRUCTURE
+========================================================
+
+Main folders:
+
+TomoNet/
+    CONF/
+    DATA/
+    Python/
+
+========================================================
+3. OPERATIONAL TOMOGRAPHY
+========================================================
+
+Main script:
+Python/run.py
+
+Workflow:
+1. Read configuration
+2. Read stations
+3. Read ERA5/NWM
+4. Read SP3 orbits
+5. Read GNSS observations
+6. Construct observations
+7. Ray tracing
+8. Tomography inversion
+9. Save output
+
+========================================================
+4. TOMOGRAPHY METHODS
+========================================================
+
+Configured by:
+switches["method"]
+
+Options:
+
+LSQ
+    Least squares tomography
+
+KALMAN
+    Sequential Kalman tomography
+
+NN
+    Neural-network tomography using pretrained model
+
+========================================================
+5. NEURAL NETWORK TRAINING
+========================================================
+
+Folder:
+Python/model_train/
+
+Contains:
+- train_one.py
+- train_double.py
+- gather_data.py
+- stats.py
+
+Purpose:
+- train TomoNet neural networks
+- generate .pt checkpoints
+- validation statistics
+
+Produced model:
+Python/model_train/tomonet_model.pt
+
+========================================================
+6. OPERATIONAL NN TOMOGRAPHY
+========================================================
+
+Operational NN tomography uses:
+Python/tomo/nn_tomography.py
+
+The pretrained checkpoint:
+Python/model_train/tomonet_model.pt
+
+is loaded automatically.
+
+========================================================
+7. MAIN VARIABLES
+========================================================
+
+A
+    Geometry matrix
+
+SWD
+    Slant wet delay observations
+
+Napr
+    Apriori refractivity field
+
+Nw
+    Predicted wet refractivity field
+
+Elev
+    Satellite elevation angles
+
+========================================================
+8. OUTPUT FILES
+========================================================
+
+Operational tomography:
+DATA/<PROJECT>/OUT/
+
+Examples:
+out_REAL_LSQ_ERA5.npy
+out_REAL_NN_ERA5.npy
+
+
+========================================================
+9. TOMO_CONF.PY PROCESSING OPTIONS
+========================================================
+
+All operational settings are controlled through:
+
+Python/tomo_conf.py
+
+The configuration file defines:
+- tomography geometry
+- processing intervals
+- processing methods
+- apriori models
+- interpolation modes
+- paths
+- output directories
+- NN processing settings
+
+--------------------------------------------------------
+9.1 Main Processing Switches
+--------------------------------------------------------
+
+switches["solution"]
+
+Options:
+    REAL
+    SYNTHETIC
+
+Description:
+    REAL:
+        Uses real GNSS atmosphere observations.
+
+    SYNTHETIC:
+        Uses synthetic observations generated from the model.
+
+--------------------------------------------------------
+9.2 Tomography Method
+--------------------------------------------------------
+
+switches["method"]
+
+Options:
+    LSQ
+    KALMAN
+    NN
+
+Description:
+    LSQ:
+        Classical weighted least-squares tomography.
+
+    KALMAN:
+        Sequential Kalman-filter tomography.
+
+    NN:
+        Neural-network tomography using pretrained
+        TomoNet .pt model.
+
+--------------------------------------------------------
+9.3 Apriori Model
+--------------------------------------------------------
+
+switches["aprModel"]
+
+Options:
+    ERA5
+    DETER
+
+Description:
+    ERA5:
+        Uses ERA5 refractivity fields.
+
+    DETER:
+        Uses GPT2 deterministic refractivity fields.
+
+--------------------------------------------------------
+9.4 Interpolation Method
+--------------------------------------------------------
+
+switches["modelInterp"]
+
+Options:
+    accurate
+    simple
+
+Description:
+    accurate:
+        Uses spline-based interpolation for refractivities at lowest altitudes.
+
+    simple:
+        Uses liniear interpolation for refractivities.
+
+--------------------------------------------------------
+9.5 Observation Weighting
+--------------------------------------------------------
+
+switches["setwieghts"]
+
+Options:
+    YES
+    NO
+
+Description:
+    Enables or disables tomography observation weighting based on observation errors.
+
+--------------------------------------------------------
+9.6 Station Selection
+--------------------------------------------------------
+
+switches["stat_range"]
+
+Description:
+    Controls minimum station coverage and
+    station selection criteria.
+
+--------------------------------------------------------
+9.7 Neural-Network Settings
+--------------------------------------------------------
+
+switches["NN"]
+
+Example:
+
+switches["NN"] = {
+    "model_type": "double_branch",
+    "checkpoint_name": "tomonet_model.pt",
+    "results_name": "nn_output.npy",
+}
+
+Parameters:
+
+model_type
+    one_branch / double_branch
+
+checkpoint_name
+    Name of pretrained .pt checkpoint located in:
+    Python/model_train/
+
+results_name
+    Name of saved NN tomography output.
+
+--------------------------------------------------------
+9.8 Tomography Grid
+--------------------------------------------------------
+
+model["lat_TOMO"]
+model["lon_TOMO"]
+model["levels_TOMO"]
+
+Description:
+    Defines tomography voxel grid.
+
+Example:
+
+model["lat_TOMO"] = np.arange(50.0, 53.5 + 1e-12, res)
+model["lon_TOMO"] = np.arange(18.0, 21.5 + 1e-12, res)
+
+--------------------------------------------------------
+9.9 Important Paths
+--------------------------------------------------------
+
+paths["mainpath"]
+    Main TomoNet directory
+
+paths["pathCONF"]
+    Configuration files
+
+paths["pathTOMO"]
+    Tomography cache files
+
+paths["pathMETEO"]
+    ERA5 meteorological files
+
+paths["pathATM"]
+    GNSS atmosphere products
+
+paths["pathORB"]
+    SP3 orbit files
+
+paths["pathSAVE"]
+    Main processing output
+
+paths["pathEXPORT"]
+    Export directory
+
+========================================================
+9. REQUIREMENTS
+========================================================
+
+Recommended:
+Python >= 3.10
+
+Required packages:
+- numpy
+- scipy
+- netCDF4
+- torch
+- matplotlib
+
+========================================================
+10. CONTACT
+========================================================
+
+Adam Cegla
+ETH Zurich
+Chair of Space Geodesy
+
+acegla@ethz.ch
